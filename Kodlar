@@ -1,1 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast solution</title>
+</head>
+<body>
 
+    <div class="location" style="display: flex; ">
+<div class="kasa">
+    <h1>Akıllı kasa</h1>
+    <img src="images/indir.jpeg" alt="">
+
+    <div class="meyve">
+        <button onclick="urunEkle('muz')">muz</button>
+        <button onclick="urunEkle('çilek')">çilek</button>
+        <button onclick="urunEkle('salatalık')">salatalık</button>
+    </div>
+
+    <div>
+        <h2>Ürün İade</h2>
+        <button onclick="urunIade()">Ürün İade</button>
+    </div>
+
+    <div>
+        <h2>Ödeme Yap</h2>
+        <button onclick="odemeYap('nakit')">Nakit</button>
+        <button onclick="odemeYap('pos')">Pos</button>
+    </div>
+
+    <div>
+        <h2>Toplam Tutar: <span id="toplamTutar">0</span> TL</h2>
+    </div>
+</div>
+
+
+<div class="pastane">
+    <h1>Pastane</h1>
+
+    <img src="images/indir (1).jpeg" alt="">
+
+    <div class="pasta">
+        <button onclick="urunEkle('pasta')">pasta</button>
+        <button onclick="urunEkle('poğaça')">poğaça</button>
+        <button onclick="urunEkle('kurabiye')">kurabiye</button>
+
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+class OdemeYontemi {
+    odemeYap(tutar) {
+        throw new Error("Bu metod alt sınıflar tarafından uygulanmalıdır.");
+    }
+}
+
+class NakitOdeme extends OdemeYontemi {
+    odemeYap(tutar) {
+        console.log(`Nakit ödeme alındı: ${tutar} TL`);
+    }
+}
+
+class PosOdeme extends OdemeYontemi {
+    odemeYap(tutar) {
+        console.log(`Kart ile ödeme alındı: ${tutar} TL`);
+    }
+}
+
+class Urun {
+    constructor(fiyat, kilo) {
+        this.fiyat = fiyat;
+        this.kilo = kilo;
+    }
+
+    getToplamFiyat() {
+        return this.fiyat * this.kilo;
+    }
+}
+
+class Kasa {
+    constructor() {
+        this.toplamTutar = 0;
+    }
+
+    urunEkle(urun) {
+        this.toplamTutar += urun.getToplamFiyat();
+        console.log(`Ürün eklendi. Güncel toplam: ${this.toplamTutar} TL`);
+        document.getElementById('toplamTutar').innerText = this.toplamTutar;
+    }
+
+    iade(urun) {
+        this.toplamTutar -= urun.getToplamFiyat();
+        console.log(`Ürün iade edildi. Güncel toplam: ${this.toplamTutar} TL`);
+        document.getElementById('toplamTutar').innerText = this.toplamTutar;
+    }
+
+    odemeYap(odemeYontemi) {
+        if (this.toplamTutar <= 0) {
+            console.log("Ödenecek bir tutar yok.");
+            return;
+        }
+        
+        odemeYontemi.odemeYap(this.toplamTutar);
+        this.toplamTutar = 0;
+        console.log("Ödeme tamamlandı. Kasa sıfırlandı.");
+        document.getElementById('toplamTutar').innerText = this.toplamTutar;
+    }
+}
+
+const kasa = new Kasa();
+
+const urunFiyatlari = {
+    muz: 5,
+    çilek: 10,
+    salatalık: 3,
+    pasta: 100,
+    poğaça: 20,
+    kurabiye: 5
+};
+
+function urunEkle(urunAdi) {
+    let miktar;
+    if (urunAdi === 'pasta' || urunAdi === 'poğaça' || urunAdi === 'kurabiye') {
+        miktar = parseInt(prompt(`${urunAdi} adedini girin:`));
+    } else {
+        miktar = parseFloat(prompt(`${urunAdi} kilosunu girin:`));
+    }
+    if (isNaN(miktar) || miktar <= 0) {
+        alert("Geçerli bir miktar girin.");
+        return;
+    }
+    const fiyat = urunFiyatlari[urunAdi];
+    kasa.urunEkle(new Urun(fiyat, miktar));
+}
+
+function urunIade() {
+    const urunAdi = prompt("İade edilecek ürün adını girin (muz, çilek, salatalık, pasta, poğaça, kurabiye):");
+    if (!urunFiyatlari[urunAdi]) {
+        alert("Geçerli bir ürün adı girin.");
+        return;
+    }
+    let miktar;
+    if (urunAdi === 'pasta' || urunAdi === 'poğaça' || urunAdi === 'kurabiye') {
+        miktar = parseInt(prompt(`${urunAdi} adedini girin:`));
+    } else {
+        miktar = parseFloat(prompt(`${urunAdi} kilosunu girin:`));
+    }
+    if (isNaN(miktar) || miktar <= 0) {
+        alert("Geçerli bir miktar girin.");
+        return;
+    }
+    const fiyat = urunFiyatlari[urunAdi];
+    kasa.iade(new Urun(fiyat, miktar));
+}
+
+function odemeYap(odemeTuru) {
+    const odemeYontemi = odemeTuru === 'nakit' ? new NakitOdeme() : new PosOdeme();
+    kasa.odemeYap(odemeYontemi);
+    alert("Ödeme tamamlandı.");
+}
