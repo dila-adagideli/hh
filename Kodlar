@@ -51,6 +51,7 @@
 </div>
 
 </div>
+
 <div class="sensor">
     <h1>Saklama Alanı Durumu</h1>
     <div>
@@ -61,6 +62,35 @@
     <button onclick="durumGuncelle()">Durumu Güncelle</button>
 </div>
 
+<div class="personel">
+    <h1>Personel Yönetimi</h1>
+    <div>
+        <h2>Maaşlar</h2>
+        <div id="maaslar"></div>
+    </div>
+    <div>
+        <h2>Nöbet Çizelgesi</h2>
+        <div id="nobetCizelgesi"></div>
+    </div>
+    <div>
+        <h2>İzin Listesi</h2>
+        <div id="izinListesi"></div>
+    </div>
+    <button onclick="personelYonetimi()">Personel Yönetimini Güncelle</button>
+</div>
+
+<div class="rapor">
+    <h1>Tedarik ve Stok Satış Raporu</h1>
+    <div>
+        <h2>Tedarik Raporu</h2>
+        <div id="tedarikRaporu"></div>
+    </div>
+    <div>
+        <h2>Stok Satış Raporu</h2>
+        <div id="stokSatisRaporu"></div>
+    </div>
+    <button onclick="raporGuncelle()">Raporları Güncelle</button>
+</div>
 
 <script>
 class OdemeYontemi {
@@ -174,7 +204,6 @@ function odemeYap(odemeTuru) {
     alert("Ödeme tamamlandı.");
 }
 
-
 class Sensor {
     constructor() {
         if (this.constructor === Sensor) {
@@ -233,6 +262,139 @@ const saklamaAlani = new SaklamaAlani();
 function durumGuncelle() {
     saklamaAlani.durumGuncelle();
 }
+
+class Personel {
+    constructor(ad, departman) {
+        if (this.constructor === Personel) {
+            throw new Error("Abstract class 'Personel' cannot be instantiated directly.");
+        }
+        this.ad = ad;
+        this.departman = departman;
+    }
+
+    maasHesapla() {
+        throw new Error("Method 'maasHesapla()' must be implemented.");
+    }
+}
+
+class MusteriDestek extends Personel {
+    constructor(ad, saatlikUcret, calismaSaati) {
+        super(ad, "Müşteri Destek");
+        this.saatlikUcret = saatlikUcret;
+        this.calismaSaati = calismaSaati;
+    }
+
+    maasHesapla() {
+        return this.saatlikUcret * this.calismaSaati;
+    }
+}
+
+class ReyonBakim extends Personel {
+    constructor(ad, aylikMaas) {
+        super(ad, "Reyon Bakım");
+        this.aylikMaas = aylikMaas;
+    }
+
+    maasHesapla() {
+        return this.aylikMaas;
+    }
+}
+
+class NobetCizelgesi {
+    constructor() {
+        this.nobetler = [];
+    }
+
+    nobetEkle(personel, tarih) {
+        this.nobetler.push({ personel, tarih });
+    }
+
+    listele() {
+        const nobetListesi = this.nobetler.map(nobet => `${nobet.personel.ad} - ${nobet.tarih}`).join('<br>');
+        document.getElementById('nobetCizelgesi').innerHTML = nobetListesi;
+    }
+}
+
+class IzinYoneticisi {
+    constructor() {
+        this.izinler = [];
+    }
+
+    izinEkle(personel, baslangic, bitis) {
+        this.izinler.push({ personel, baslangic, bitis });
+    }
+
+    listele() {
+        const izinListesi = this.izinler.map(izin => `${izin.personel.ad} - ${izin.baslangic} - ${izin.bitis}`).join('<br>');
+        document.getElementById('izinListesi').innerHTML = izinListesi;
+    }
+}
+
+function personelYonetimi() {
+    const personeller = [
+        new MusteriDestek("Ahmet", 50, 160),
+        new MusteriDestek("Ayşe", 55, 150),
+        new MusteriDestek("Fatma", 60, 140),
+        new ReyonBakim("Mehmet", 10000),
+        new ReyonBakim("Ali", 9500),
+        new ReyonBakim("Veli", 9000)
+    ];
+
+    const maaslar = personeller.map(personel => `${personel.ad} Maaş: ${personel.maasHesapla()} TL`).join('<br>');
+    document.getElementById('maaslar').innerHTML = maaslar;
+
+    const nobetCizelgesi = new NobetCizelgesi();
+    nobetCizelgesi.nobetEkle(personeller[0], "2025-03-20");
+    nobetCizelgesi.nobetEkle(personeller[1], "2025-03-21");
+    nobetCizelgesi.nobetEkle(personeller[2], "2025-03-22");
+    nobetCizelgesi.nobetEkle(personeller[3], "2025-03-23");
+    nobetCizelgesi.nobetEkle(personeller[4], "2025-03-24");
+    nobetCizelgesi.nobetEkle(personeller[5], "2025-03-25");
+    nobetCizelgesi.listele();
+
+    const izinYoneticisi = new IzinYoneticisi();
+    izinYoneticisi.izinEkle(personeller[0], "2025-04-01", "2025-04-05");
+    izinYoneticisi.izinEkle(personeller[1], "2025-04-06", "2025-04-10");
+    izinYoneticisi.izinEkle(personeller[2], "2025-04-11", "2025-04-15");
+    izinYoneticisi.listele();
+}
+
+class Rapor {
+    constructor() {
+        this.tedarik = JSON.parse(localStorage.getItem('tedarik')) || [];
+        this.stokSatis = JSON.parse(localStorage.getItem('stokSatis')) || [];
+    }
+
+    tedarikEkle(urun, miktar) {
+        this.tedarik.push({ urun, miktar, tarih: new Date().toLocaleDateString() });
+        localStorage.setItem('tedarik', JSON.stringify(this.tedarik));
+    }
+
+    stokSatisEkle(urun, miktar) {
+        this.stokSatis.push({ urun, miktar, tarih: new Date().toLocaleDateString() });
+        localStorage.setItem('stokSatis', JSON.stringify(this.stokSatis));
+    }
+
+    listele() {
+        const tedarikListesi = this.tedarik.map(item => `${item.tarih} - ${item.urun}: ${item.miktar}`).join('<br>');
+        document.getElementById('tedarikRaporu').innerHTML = tedarikListesi;
+
+        const stokSatisListesi = this.stokSatis.map(item => `${item.tarih} - ${item.urun}: ${item.miktar}`).join('<br>');
+        document.getElementById('stokSatisRaporu').innerHTML = stokSatisListesi;
+    }
+}
+
+const rapor = new Rapor();
+
+function raporGuncelle() {
+    rapor.listele();
+}
+
+// Example usage
+rapor.tedarikEkle('muz', 100);
+rapor.stokSatisEkle('muz', 20);
+raporGuncelle();
+
 </script>
 </body>
 </html>
