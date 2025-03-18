@@ -51,6 +51,16 @@
 </div>
 
 </div>
+<div class="sensor">
+    <h1>Saklama Alanı Durumu</h1>
+    <div>
+        <h2>Sıcaklık: <span id="sicaklik">-</span> °C</h2>
+        <h2>Nem: <span id="nem">-</span> %</h2>
+        <h2>Doluluk: <span id="doluluk">-</span> %</h2>
+    </div>
+    <button onclick="durumGuncelle()">Durumu Güncelle</button>
+</div>
+
 
 <script>
 class OdemeYontemi {
@@ -163,3 +173,66 @@ function odemeYap(odemeTuru) {
     kasa.odemeYap(odemeYontemi);
     alert("Ödeme tamamlandı.");
 }
+
+
+class Sensor {
+    constructor() {
+        if (this.constructor === Sensor) {
+            throw new Error("Abstract class 'Sensor' cannot be instantiated directly.");
+        }
+    }
+
+    ölç() {
+        throw new Error("Method 'ölç()' must be implemented.");
+    }
+}
+
+class SicaklikSensor extends Sensor {
+    ölç() {
+        return (Math.random() * 20 + 10).toFixed(2); // 10-30 derece arası rastgele değer
+    }
+}
+
+class NemSensor extends Sensor {
+    ölç() {
+        return (Math.random() * 50 + 30).toFixed(2); // 30-80% arası rastgele değer
+    }
+}
+
+class DolulukSensor extends Sensor {
+    ölç() {
+        return (Math.random() * 100).toFixed(2); // 0-100% arası rastgele değer
+    }
+}
+
+class SaklamaAlani {
+    constructor() {
+        this.sicaklikSensor = new SicaklikSensor();
+        this.nemSensor = new NemSensor();
+        this.dolulukSensor = new DolulukSensor();
+    }
+
+    durumGuncelle() {
+        const sicaklik = this.sicaklikSensor.ölç();
+        const nem = this.nemSensor.ölç();
+        const doluluk = this.dolulukSensor.ölç();
+
+        document.getElementById('sicaklik').innerText = sicaklik;
+        document.getElementById('nem').innerText = nem;
+        document.getElementById('doluluk').innerText = doluluk;
+
+        console.log("Saklama Alanı Durumu:");
+        console.log(`Sıcaklık: ${sicaklik} °C`);
+        console.log(`Nem: ${nem} %`);
+        console.log(`Doluluk: ${doluluk} %`);
+    }
+}
+
+const saklamaAlani = new SaklamaAlani();
+
+function durumGuncelle() {
+    saklamaAlani.durumGuncelle();
+}
+</script>
+</body>
+</html>
